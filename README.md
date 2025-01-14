@@ -1,1 +1,1 @@
-# AIOD-HW-agent-edge
+# AIOD-HW-agent
