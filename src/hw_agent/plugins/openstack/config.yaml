@@ -1,0 +1,33 @@
+name: Openstack Plugin
+module: openstack_plugin
+orchestrator_type: openstack
+documentation:
+  description: Collects hardware information from Openstack tenants
+  author: Author
+  version: 1.0.0
+dependencies:
+  - openstacksdk>=0.61.0  
+configuration:
+  client_socket_timeout: 10
+  verify: false
+connection_schema: 
+    type: object  
+    properties:
+      auth_url:
+        description: The OpenStack authentication URL.
+        type: string
+      username:
+        description: The OpenStack username.
+        type: string
+      password:
+        description: The OpenStack password.
+        type: string
+      project_name:
+        description: The OpenStack project name.
+        type: string
+      user_domain_name:
+        description: The OpenStack user domain name.
+        type: string
+      region_name:
+        description: The OpenStack region name.
+        type: string

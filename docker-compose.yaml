@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  hardware_agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hw-agent:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./configs:/app/configs
+      - ./data:/app/data
+    env_file:
+      - .env

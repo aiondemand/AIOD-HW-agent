@@ -1,0 +1,16 @@
+# Directories to exclude during processing
+ExcludeDirectories:
+  - '__pycache__'
+  - '.git'
+
+# Allowed orchestrator types. Extend this list to add additional orchestrator types.
+AllowedOrchestratorTypes:
+  - kubernetes
+  - openstack
+  - slurm
+
+# Plugins directory (optional)
+# PluginsDirectory: "pp"
+
+# Enable or disable dynamic loading of dependencies
+DynamicDependenciesLoading: false

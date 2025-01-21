@@ -1,0 +1,10 @@
+fastapi>=0.70.0
+uvicorn[standard]>=0.15.0
+pydantic>=2.9.2
+requests>=2.25.1
+kubernetes>=17.17.0
+openstacksdk==4.0.0
+jsonschema>=4.0.0
+pytest
+pytest-mock
+argparse

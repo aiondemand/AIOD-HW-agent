@@ -1,0 +1,27 @@
+# Exclude configurations and data repositories
+configs/
+
+# Exclude Python cache files
+__pycache__/
+*.pyc
+
+# Exclude Git files
+.git/
+.gitignore
+
+# Exclude virtual environments
+venv/
+.env/
+
+# Exclude other unnecessary files
+.DS_Store
+
+# Exclude IDE configuration files
+.vscode
+.idea
+
+# Exclude build files and directories
+build/
+
+# Exclude test files and directories
+test/

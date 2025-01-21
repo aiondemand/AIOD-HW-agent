@@ -1,0 +1,28 @@
+name: Sample Plugin
+module: sample_plugin
+orchestrator_type: slurm
+
+documentation:
+  description: Collects hardware information from Slurm
+  author: Your Name
+  version: 1.0.0
+
+# plugin dependencies
+dependencies:
+  - slurm
+
+# specific plugin configuration
+configuration:
+  client_socket_timeout: 10
+  verify: false
+connection_schema:
+  type: object
+  properties:
+    host:
+      type: string
+      description: The host to connect to
+    port:
+      type: integer
+      description: The port to connect to
+
+

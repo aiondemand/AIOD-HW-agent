@@ -1,0 +1,118 @@
+name: Kubernetes Plugin
+module: kubernetes_plugin
+orchestrator_type: kubernetes
+documentation:
+  description: Collects hardware information from Kubernetes nodes using Node Feature Discovery (NFD)
+  author: ITI
+  version: 1.0.0
+dependencies:
+  - kubernetes
+connection_schema:
+  type: "object"
+  description: "Schema for a Kubernetes kubeconfig"
+  required:
+    - kubeconfig
+  properties:
+    kubeconfig:
+      type: "object"
+      description: "Kubernetes kubeconfig object"
+      required:
+        - apiVersion
+        - clusters
+        - contexts
+        - current-context
+        - kind
+        - preferences
+        - users
+      properties:
+        apiVersion:
+          type: "string"
+          description: "Kubeconfig API version (e.g., 'v1')"
+        clusters:
+          type: "array"
+          description: "List of cluster definitions"
+          items:
+            type: "object"
+            required:
+              - cluster
+              - name
+            properties:
+              name:
+                type: "string"
+                description: "Name of the cluster"
+              cluster:
+                type: "object"
+                required:
+                  - certificate-authority-data
+                  - server
+                properties:
+                  certificate-authority-data:
+                    type: "string"
+                    description: "Base64-encoded CA certificate data"
+                  server:
+                    type: "string"
+                    description: "URL of the cluster API server"
+        contexts:
+          type: "array"
+          description: "List of context definitions"
+          items:
+            type: "object"
+            required:
+              - context
+              - name
+            properties:
+              name:
+                type: "string"
+                description: "Name of the context"
+              context:
+                type: "object"
+                required:
+                  - cluster
+                  - namespace
+                  - user
+                properties:
+                  cluster:
+                    type: "string"
+                    description: "Name of the cluster referenced by this context"
+                  namespace:
+                    type: "string"
+                    description: "Namespace context"
+                  user:
+                    type: "string"
+                    description: "User name referenced by this context"
+        current-context:
+          type: "string"
+          description: "The current context in use"
+        kind:
+          type: "string"
+          description: "Kubeconfig resource type (usually 'Config')"
+        preferences:
+          type: "object"
+          description: "User preferences object"
+          # Typically empty, but let's allow any object
+        users:
+          type: "array"
+          description: "List of user definitions"
+          items:
+            type: "object"
+            required:
+              - name
+              - user
+            properties:
+              name:
+                type: "string"
+                description: "Name of the user definition"
+              user:
+                type: "object"
+                description: "User credentials info"
+                required:
+                  - client-certificate-data
+                  - client-key-data
+                properties:
+                  client-certificate-data:
+                    type: "string"
+                    description: "Base64-encoded client certificate"
+                  client-key-data:
+                    type: "string"
+                    description: "Base64-encoded client key"
+

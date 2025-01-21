@@ -1,0 +1,56 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "plugin-definition.schema.json",
+    "type": "object",
+    "title": "Plugin Definition",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "The name of the plugin."
+      },
+      "orchestrator_type": {
+        "type": "string",
+        "description": "The type of orchestrator this plugin handles."
+      },
+      "module": {
+        "type": "string",
+        "description": "The importable module path for the plugin."
+      },
+      "documentation": {
+        "type": "object",
+        "description": "Documentation metadata for the plugin.",
+        "properties": {
+          "description": { "type": "string" },
+          "author": { "type": "string" },
+          "version": { "type": "string" }
+        },
+        "required": ["description", "author", "version"]
+      },
+      "dependencies": {
+        "type": "array",
+        "description": "List of dependencies required by the plugin.",
+        "items": { "type": "string" }
+      },
+      "configuration": {
+        "type": "object",
+        "description": "Additional configuration fields specific to this plugin.",
+        "additionalProperties": true
+      },
+      "connection_schema": {
+        "type": "object",
+        "description": "A free-form object to store a complex connection schema, if needed.",
+        "additionalProperties": true
+      }
+    },
+    "required": [
+      "name",
+      "orchestrator_type",
+      "module",
+      "documentation",
+      "dependencies",
+      "configuration",
+      "connection_schema"
+    ],
+    "additionalProperties": false
+  }
+  
