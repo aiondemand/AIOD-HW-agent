@@ -37,7 +37,7 @@ The plugin architecture consists of two primary components:
 | `documentation.version`     | The version of the plugin.                              | string          | Yes           |
 | `dependencies`       | List of dependencies required by the plugin.                 | array of strings| Yes           |
 | `configuration`      | Additional configuration fields specific to this plugin.      | object          | Yes           |
-| `connection_schema`  | A free-form object to store a complex connection schema, if needed. | object          | Yes           |
+| `connection_schema`  | An object that describes the connection info needed, using JSON Schema syntax. | object          | Yes           |
 
 
 See [Plugin Definition JSON Schema](doc/plugin_definition/plugin_definition_schema.json)
