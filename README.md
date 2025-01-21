@@ -1,6 +1,6 @@
-## HW Agent Connectors PoC (Draft, WIP)
+## HW Agent 
 
-HW Agnet API PoC based on Connector architecture.
+HW Agnet API PoC based on Plugin architecture.
 
 ## Plugin Architecture
 
