@@ -18,7 +18,6 @@ class OpenStackPlugin(BasePlugin):
 
     def fetch_computational_data(self, plugin_context: PluginContext) -> Dict[str, Any]:
 
-        # TODO: Build a model for this as a responsability of the plugin
         # Retrieve connection details from the context
         auth_url = plugin_context.get_connection_info('auth_url')
         username = plugin_context.get_connection_info('username')
@@ -54,8 +53,8 @@ class OpenStackPlugin(BasePlugin):
             raise
 
         try:
-            # Retrieve compute limits
             self.logger.info("Retrieving compute limits...")
+            # quotas = conn.get_compute_quotas(project_domain_name)
             limits = conn.compute.get_limits()
             absolute_limits = limits.absolute
             self.logger.info("Compute limits retrieved successfully.")
@@ -66,19 +65,23 @@ class OpenStackPlugin(BasePlugin):
             self.logger.error(f"Error retrieving compute limits: {e}")
             raise
 
-    def transform_computational_data(self, computational_data: ComputationalData) -> ComputationalAsset:
+    def transform_computational_data(self, plugin_context: PluginContext, computational_data: ComputationalData) -> ComputationalAsset:
+        
+        asset_name = plugin_context.get_resource_metadata().name
+        asset_contact = plugin_context.get_resource_metadata().contact
+        asset_description = plugin_context.get_resource_metadata().description
         
         computational_info = computational_data.computational_info
-        resource_info = computational_data.metadata.resource_info
         
         asset = ComputationalAsset(
-            # creator=[resource_info.contact],
-            name=resource_info.name,
+            creator=[asset_contact],
+            name=asset_name,
+            contact=[asset_contact],
             id="1",
-            geographical_location="",
-            description=Description(plain=resource_info.description),
             os="",
-            owner=resource_info.contact,
+            geographical_location="",
+            description=Description(plain=asset_description),
+            owner=asset_contact,
             pricing_schema="",
             underlying_orchestrating_technology=OrchestratorType.OPENSTACK,
             kernel="",
