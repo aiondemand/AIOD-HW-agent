@@ -18,7 +18,7 @@ class SamplePlugin(BasePlugin):
         """
         return None
 
-    def transform_computational_data(self, computational_data: ComputationalData) -> ComputationalAsset:
+    def transform_computational_data(self, plugin_context: PluginContext, computational_data: ComputationalData) -> ComputationalAsset:
         """
         Transforms the data from the infrastructure into a computational asset
         """

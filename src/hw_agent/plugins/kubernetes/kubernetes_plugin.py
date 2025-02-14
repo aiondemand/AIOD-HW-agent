@@ -5,7 +5,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 from hw_agent.core.plugin_context import PluginContext
 from hw_agent.models.computational_models import ComputationalData
-from hw_agent.models.computational_asset import ComputationalAsset, CPUProperties, MemoryProperties
+from hw_agent.models.computational_asset import ComputationalAsset, CPUProperties, Description, MemoryProperties
 from hw_agent.utils.logger import get_logger
 from typing import Any, Dict
 
@@ -75,10 +75,13 @@ class KubernetesPlugin(BasePlugin):
             self.logger.error(f"Exception when calling CoreV1Api->list_node: {e}")
             raise
 
-    #def transform_computational_data(self, computational_data: ComputationalData) -> ComputationalAsset:
-    #        return computational_data
-
-    def transform_computational_data(self, computational_data: ComputationalData) -> ComputationalAsset:
+    
+    def transform_computational_data(self, plugin_context: PluginContext, computational_data: ComputationalData) -> ComputationalAsset:
+        
+        # get the administrative metadata
+        asset_name = plugin_context.get_resource_metadata().name
+        asset_contact = plugin_context.get_resource_metadata().contact
+        asset_description = plugin_context.get_resource_metadata().description
         
         nodes = computational_data.computational_info["nodes"]
         cpu_properties = []
@@ -119,13 +122,13 @@ class KubernetesPlugin(BasePlugin):
            #     )
             
          
-            
-        computational_asset = ComputationalAsset(
-            name=node["name"],
+         
+                  
+        return ComputationalAsset(
+            name=asset_name,
+            description=Description(plain=asset_description),
+            contact=[asset_contact],
             cpu=cpu_properties
         )
-        
-                               
-        return computational_asset
     
     
