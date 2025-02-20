@@ -12,7 +12,7 @@ class ErrorDescription:
     def __init__(self, exception: Exception = None, detail: str = None, error: str = None):
         
         # Use provided error message or convert exception to string
-        self.error =  self.error = error or (str(exception) if exception else "Unknown error")
+        self.error = error or (str(exception) if exception else "Unknown error")
         # Use provided detail or get default detail from exception
         self.detail = self.detail = detail or self.get_default_detail(exception)
 
