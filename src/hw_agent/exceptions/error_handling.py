@@ -5,57 +5,78 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from pydantic import ValidationError
-from hw_agent.exceptions.custom_exceptions import APIRequestError, AuthenticationError, ConfigurationNotFoundError, PluginNotFoundError, ExternalAPIError
+from hw_agent.exceptions.custom_exceptions import APIRequestError, AuthenticationError, ConfigurationNotFoundError, ConnectionConfigurationError, PluginNotFoundError, ExternalAPIError
+
+
+class ErrorDescription:
+    def __init__(self, exception: Exception = None, detail: str = None, error: str = None):
+        
+        # Use provided error message or convert exception to string
+        self.error = error or (str(exception) if exception else "Unknown error")
+        # Use provided detail or get default detail from exception
+        self.detail = self.detail = detail or self.get_default_detail(exception)
+
+    def get_default_detail(self, exception):
+        if exception:
+            return f"{exception.__class__.__name__} error occurred"
+        return "An unspecified error occurred."
+
+    def to_dict(self):
+        return {
+            "detail": self.detail,
+            "error": self.error
+        }
+    
+
 
 def add_exception_handlers(app):
     @app.exception_handler(ConfigurationNotFoundError)
     async def configuration_not_found_handler(request: Request, exc: ConfigurationNotFoundError):
         return JSONResponse(
             status_code=404,
-            content={"detail": str(exc)}
+            content=ErrorDescription(exc).to_dict()
         )
 
     @app.exception_handler(PluginNotFoundError)
     async def plugin_not_found_handler(request: Request, exc: PluginNotFoundError):
         return JSONResponse(
             status_code=404,
-            content={"detail": str(exc)}
+            content=ErrorDescription(exc, "The requested plugin was not found").to_dict()
         )
 
     @app.exception_handler(ExternalAPIError)
     async def external_api_error_handler(request: Request, exc: ExternalAPIError):
         return JSONResponse(
             status_code=502,
-            content={"detail": str(exc)}
+            content=ErrorDescription(exc, "The external API could not be reached").to_dict()
         )
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
         return JSONResponse(
             status_code=422,
-            content={"detail": exc.errors(), "body": exc.body}
+            content=ErrorDescription(exc,  exc.body).to_dict()
         )
 
     @app.exception_handler(AuthenticationError)
     async def authentication_error_handler(request: Request, exc: AuthenticationError):
         return JSONResponse(
             status_code=401,
-            content={"detail": str(exc)}    
-    )
-        
+            content=ErrorDescription(exc).to_dict()
+        )
+
     @app.exception_handler(APIRequestError)
     async def api_request_error_handler(request: Request, exc: APIRequestError):
         return JSONResponse(
             status_code=400,
-            content={"detail": str(exc)}
+            content=ErrorDescription(exc).to_dict()
         )
-            
 
     @app.exception_handler(Exception)
     async def general_exception_handler(request: Request, exc: Exception):
         return JSONResponse(
             status_code=500,
-            content={"detail": "An unexpected error occurred", "error": str(exc)}
+            content=ErrorDescription(exc).to_dict()
         )
 
     @app.exception_handler(ResponseValidationError)
@@ -72,10 +93,7 @@ def add_exception_handlers(app):
 
         return JSONResponse(
             status_code=422,
-            content={
-                "detail": "Validation Error",
-                "errors": error_details
-            }
+            content=ErrorDescription(exc, error_details).to_dict()
         )
 
     @app.exception_handler(ValidationError)
@@ -92,8 +110,12 @@ def add_exception_handlers(app):
 
         return JSONResponse(
             status_code=422,
-            content={
-                "detail": "Model Validation Error",
-                "errors": error_details
-            }
+            content=ErrorDescription(exc, "Model validation error", error_details).to_dict()
+        )
+
+    @app.exception_handler(ConnectionConfigurationError)
+    async def validate_connection_info(request: Request, exc: ConnectionConfigurationError):
+        return JSONResponse(
+            status_code=400,
+            content=ErrorDescription(exc)
         )

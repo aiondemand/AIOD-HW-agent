@@ -26,7 +26,7 @@ class BasePlugin(ABC):
         """
         raise NotImplementedError("Plugins must implement the fecth_computational_data method.")
     @abstractmethod
-    def transform_computational_data(self, computational_data: ComputationalData) -> ComputationalAsset:
+    def transform_computational_data(self, plugin_context: PluginContext, computational_data: ComputationalData) -> ComputationalAsset:
         """
         Transforms the data from the plugin into the standard format for the AIOD catalog.
         """
@@ -96,9 +96,8 @@ class BasePlugin(ABC):
         
         # Plugins implement this method to transform the data
         self.logger.info("Starting transforming computational asset through the plugin...")
-        computational_asset = self.transform_computational_data(computational_data)
 
-        return computational_asset
+        return self.transform_computational_data(plugin_context, computational_data)
     
     
     def _build_computational_data(

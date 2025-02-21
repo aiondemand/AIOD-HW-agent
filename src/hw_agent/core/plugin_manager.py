@@ -12,7 +12,7 @@ from hw_agent.core.base_plugin import BasePlugin
 from hw_agent.core.plugin_context import PluginContext
 from hw_agent.core.singleton_meta import SingletonMeta
 from hw_agent.dependencies import get_plugin_cache_service, get_plugin_manager_configuration_service
-from hw_agent.exceptions.custom_exceptions import PluginLoadError, PluginNotFoundError
+from hw_agent.exceptions.custom_exceptions import ConnectionConfigurationError, PluginLoadError, PluginNotFoundError
 from hw_agent.models.computational_models import ComputationalData
 from hw_agent.models.plugin_models import PluginDefinition
 from hw_agent.services.cache_service import CacheService
@@ -206,13 +206,12 @@ class PluginManager(metaclass=SingletonMeta):
         return self.get_all_plugins()
 
     def validate_connection_info(self, connection_definition: dict, orchestratory_type: OrchestratorType) -> bool:
-        plugin = self.get_plugin(orchestratory_type)
-        if plugin:
+        if plugin := self.get_plugin(orchestratory_type):
             try:
                 self._validate_connection_info(plugin.plugin_definition.connection_schema, connection_definition)
             except jsonschema.ValidationError as e:
                 self.logger.error(f"Connection data validation error: {e.message}")
-                raise e
+                raise ConnectionConfigurationError(e)
         else:
             self.logger.error(f"No plugin found for orchestrator type: '{orchestratory_type}'.")
             raise PluginNotFoundError(f"No plugin found for orchestrator type: {orchestratory_type}")
@@ -232,4 +231,4 @@ class PluginManager(metaclass=SingletonMeta):
             jsonschema.validate(instance=connection_data, schema=schema)
             return connection_data
         except Exception as e:
-            raise jsonschema.ValidationError(f"Connection data validation error: {e.message}") from e
+            raise jsonschema.ValidationError(f"JSON Schema validation error: {e.message}") from e
