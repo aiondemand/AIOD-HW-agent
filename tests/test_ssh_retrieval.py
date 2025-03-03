@@ -5,20 +5,6 @@ import re
 from pydantic import BaseModel, HttpUrl
 from datetime import datetime
 from typing import List, Optional
-
-class CPUProperties(BaseModel):
-    # num_cpu: Optional[int] = None
-    num_cpu_cores: int
-    architecture: Optional[str] = None
-    vendor: Optional[str] = None
-    cpu_model_name: Optional[str] = None
-    cpu_family: Optional[str] = None
-    clock_speed: Optional[str] = None # Clock speed could be a string to include units, e.g., "3.5 GHz"
-    cache_L1: Optional[int] = None 
-    cache_L2: Optional[int] = None
-    cache_L3: Optional[int] = None
-    cache_L1_D: Optional[int] = None # L1 Data cache
-    cache_L1_I: Optional[int] = None # L1 Instruction cache
     
 def _retrieve_hpc_metadata_via_ssh() -> dict:
     """
@@ -78,7 +64,7 @@ def _retrieve_hpc_metadata_via_ssh() -> dict:
 def _parse_ssh_cpu_properties(lscpu_output: str) -> dict:
     """
     Helper to parse the lscpu output lines.
-        => Parse 'lscpu' output lines into a CPUProperties object.
+        => Parse 'lscpu' output lines into a dictionary.
     """
     data_map = {}
     for line in lscpu_output.splitlines():
