@@ -1,5 +1,6 @@
 import os
 import io
+import base64
 import paramiko
 from dotenv import load_dotenv
 import yaml
@@ -7,8 +8,9 @@ import yaml
 from hw_agent.core.base_plugin import BasePlugin
 from hw_agent.core.plugin_context import PluginContext
 from hw_agent.models.computational_models import ComputationalData
-from hw_agent.models.computational_asset import ComputationalAsset, CPUProperties, MemoryProperties
+from hw_agent.models.computational_asset import Description, ComputationalAsset, CPUProperties, MemoryProperties
 from hw_agent.plugins.hpc.hpc_domain import ClustersInfo
+from typing import Any, Dict, List
 
 # Load environment variables from .env file inside src/
 load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
@@ -20,16 +22,90 @@ class HPCPlugin(BasePlugin):
     def fetch_computational_data(self, plugin_context: PluginContext) -> ComputationalData:
         clusters_info = self._read_static_info()
         self.logger.info(f"Retrieved hardware information from {len(clusters_info.clusters)} nodes.")
-
+        
+        ssh_credentials = plugin_context.get_connection_info('ssh_credentials')
+        login_node      = ssh_credentials.get('login_node')
+        user            = ssh_credentials.get('user')
+        private_key     = ssh_credentials.get('private_key')
+        
+        ssh_data = self._retrieve_hpc_metadata_via_ssh(login_node, user, private_key)
+        print(ssh_data)
+        # self.logger.debug(f"HPC metadata (CPU info snippet): {hpc_metadata.get('cpu_info', '')[:100]}")
+                
         computational_info = {
-            "clusters": clusters_info
+            "clusters": clusters_info,
+            "ssh_data": ssh_data,
         }
+        print(clusters_info)
 
         self.logger.info(f"{self.name}: fetch completed.")
-        return ComputationalData(computational_info=computational_info)
+        return computational_info
 
     def transform_computational_data(self, computational_data: ComputationalData) -> ComputationalAsset:
-        return self._cluster_to_node(computational_data)
+        # Transform the data from the plugin into the standard format for the AIOD catalog.
+        clusters_info = computational_data.computational_info.get("clusters")
+        ssh_data = computational_data.computational_info.get("ssh_data")
+        
+        if not clusters_info or not clusters_info.clusters:
+            self.logger.error("No clusters found in computational data.")
+            raise ValueError("No clusters available to transform.")
+        
+        cpu_properties: List[CPUProperties] = []
+        memory_properties: List[MemoryProperties] = []
+        cluster_names: List[str] = []
+        
+        print(ssh_data["cpu_info"]["clock_speed"])
+        
+        # Process one node per cluster for illustration purposes.
+        for cluster in clusters_info.clusters:
+            cluster_names.append(cluster.name)
+            cpu_properties.append(
+                CPUProperties(
+                    num_cpu_cores   = cluster.cores_per_node,
+                    vendor          = ssh_data["cpu_info"]["vendor"],
+                    cpu_family      = ssh_data["cpu_info"]["cpu_family"],
+                    cpu_model_name  = ssh_data["cpu_info"]["cpu_model_name"],
+                    architecture    = ssh_data["cpu_info"]["architecture"],
+                    clock_speed     = ssh_data["cpu_info"]["clock_speed"],
+                )
+            )
+            memory_properties.append(
+                MemoryProperties(
+                    amount_gb=cluster.memory_per_node,
+                    # TODO: Retrieve via ssh
+                    # model=memory["model"],
+                    # vendor=memory["vendor"],
+                    # type=memory["type"],
+                    # read_bandwidth=memory["read_bandwidth"],
+                )
+            )
+        
+        # Create a combined asset name from all cluster names or use a generic label.
+        asset_name = ", ".join(cluster_names)
+        
+        print("*" * 100)
+        computational_asset = ComputationalAsset(
+            name=asset_name,
+            id=1,
+            geographical_location="",
+            description=Description(plain="test"),
+            os="",
+            owner="",
+            pricing_schema="",
+            underlying_orchestrating_technology="",
+            kernel="",
+            cpu=cpu_properties,
+            memory=memory_properties,
+            accelerator=[],
+            network=[],
+            storage=[],
+            # More properties: current load? available quota? accelerator?
+        )
+        return computational_asset
+    
+    ####################
+    # HELPER FUNCTIONS #
+    ####################
 
     def _read_static_info(self) -> ClustersInfo:
         static_info_file = os.path.join(os.path.dirname(__file__), 'static_info.yaml')
@@ -45,45 +121,8 @@ class HPCPlugin(BasePlugin):
             self.logger.error(f"Error parsing static info file: {static_info_file}: {e}")
             raise e
 
-    def _cluster_to_node(self, cluster):
-        node_name = cluster.name
-        self.logger.debug(f"Processing node: {node_name}")
-        
-        hpc_metadata = self._retrieve_hpc_metadata_via_ssh()
-        self.logger.debug(f"HPC metadata (CPU info snippet): {hpc_metadata.get('cpu_info', '')[:100]}")
-        
-        cpu_info = hpc_metadata["cpu_info"]
 
-        cpu_properties = [CPUProperties(
-            num_cpu_cores   = cluster.cores_per_node,
-            vendor          = cpu_info['vendor'],
-            cpu_family      = cpu_info['cpu_family'],
-            model           = cpu_info['cpu_model_name'],
-            # i added these, as I had them and they were in the CPUProperties:
-            architecture    = cpu_info['architecture'],
-            clock_speed     = cpu_info['clock_speed'],
-            
-        )] * cluster.node_count
-
-        memory_properties = [MemoryProperties(
-            amount_gb=cluster.memory_per_node,
-            # TODO: Retrieve via ssh
-            # model=memory["model"],
-            # vendor=memory["vendor"],
-            # type=memory["type"],
-            # read_bandwidth=memory["read_bandwidth"],
-        )] * cluster.node_count
-
-        computational_asset = ComputationalAsset(
-            name=cluster.name,
-            cpu=cpu_properties,
-            memory=memory_properties
-            # More properties: current load? available quota? accelerator?
-        )
-
-        return computational_asset
-
-    def _retrieve_hpc_metadata_via_ssh(self) -> dict:
+    def _retrieve_hpc_metadata_via_ssh(self, login_node, user, password_base64) -> dict:
         """
         Connects via SSH to the HPC environment and retrieves data.
         Returns a dictionary with partial HPC metadata.
@@ -91,13 +130,13 @@ class HPCPlugin(BasePlugin):
         
         # ----- LOGIN -----
         
-        login_node  = os.getenv("HPC_LOGIN_NODE")
-        user        = os.getenv("HPC_USER")
-        password    = os.getenv("HPC_PASSWORD")
 
-        if not (login_node and user and password):
+        if not (login_node and user and password_base64):
             self.logger.warning("SSH environment variables incomplete; skipping SSH retrieval.")
             return {"cpu_info": None, "parsed_cpu_properties": None}
+        
+        password = base64.b64decode(password_base64)
+
 
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -124,7 +163,7 @@ class HPCPlugin(BasePlugin):
             lscpu_output        = stdout.read().decode("utf-8", errors="replace")
 
             # 2. Parse the data
-            cpu_props = self._parse_lscpu_output(lscpu_output)
+            cpu_props = self._parse_ssh_cpu_properties(lscpu_output)
 
         except Exception as e:
             self.logger.error(f"SSH connection failed: {e}")

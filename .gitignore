@@ -4,6 +4,7 @@
 src/.env
 .venv
 env/
+*.env
 venv/
 venv
 venv.bak/

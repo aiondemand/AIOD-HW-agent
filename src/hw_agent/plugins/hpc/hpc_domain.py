@@ -8,6 +8,9 @@ class ClusterInfo(BaseModel):
     node_count: int
     cores_per_node: int
     memory_per_node: int
+    
+    class Config:
+        frozen = True
 
     @field_validator('name')
     def name_must_not_be_empty(cls, p):
