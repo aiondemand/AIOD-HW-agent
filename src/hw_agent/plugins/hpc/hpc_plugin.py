@@ -12,7 +12,6 @@ from hw_agent.models.computational_asset import Description, ComputationalAsset,
 from hw_agent.plugins.hpc.hpc_domain import ClustersInfo
 from typing import Any, Dict, List
 
-# Load environment variables from .env file inside src/
 load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
 
 class HPCPlugin(BasePlugin):
@@ -29,20 +28,18 @@ class HPCPlugin(BasePlugin):
         private_key     = ssh_credentials.get('private_key')
         
         ssh_data = self._retrieve_hpc_metadata_via_ssh(login_node, user, private_key)
-        print(ssh_data)
         # self.logger.debug(f"HPC metadata (CPU info snippet): {hpc_metadata.get('cpu_info', '')[:100]}")
                 
         computational_info = {
             "clusters": clusters_info,
             "ssh_data": ssh_data,
         }
-        print(clusters_info)
 
         self.logger.info(f"{self.name}: fetch completed.")
         return computational_info
 
     def transform_computational_data(self, computational_data: ComputationalData) -> ComputationalAsset:
-        # Transform the data from the plugin into the standard format for the AIOD catalog.
+
         clusters_info = computational_data.computational_info.get("clusters")
         ssh_data = computational_data.computational_info.get("ssh_data")
         
@@ -53,10 +50,8 @@ class HPCPlugin(BasePlugin):
         cpu_properties: List[CPUProperties] = []
         memory_properties: List[MemoryProperties] = []
         cluster_names: List[str] = []
-        
-        print(ssh_data["cpu_info"]["clock_speed"])
-        
-        # Process one node per cluster for illustration purposes.
+                
+        # here we do one node per cluster for illustration purposes (TODO: check with Sergio)
         for cluster in clusters_info.clusters:
             cluster_names.append(cluster.name)
             cpu_properties.append(
@@ -80,10 +75,9 @@ class HPCPlugin(BasePlugin):
                 )
             )
         
-        # Create a combined asset name from all cluster names or use a generic label.
+        # we create a combined asset name from all cluster names or use a generic label.
         asset_name = ", ".join(cluster_names)
         
-        print("*" * 100)
         computational_asset = ComputationalAsset(
             name=asset_name,
             id=1,
