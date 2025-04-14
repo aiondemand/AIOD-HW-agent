@@ -20,7 +20,7 @@ class AIODMetadataClient:
         self.aiod_keycloak_realm = settings.get('aiod_keycloak_realm')
 
         if not self.aiod_api_base_url:
-            raise ValueError("AIOD base URL key must be set in pyproject.toml under [tool.hw_agent].")
+            raise ValueError("AIOD base URL key must be set in env file under the key AIOD_API_BASE_URL")
         
         self.keycloak_client = KeycloakClient(
             auth_url=self.aiod_keycloak_auth_url,

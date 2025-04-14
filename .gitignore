@@ -62,3 +62,4 @@ MANIFEST
 
 # Configuration persistent data
 data/
+.qodo
