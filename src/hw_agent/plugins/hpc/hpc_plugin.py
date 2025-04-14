@@ -89,11 +89,11 @@ class HPCPlugin(BasePlugin):
             id=1,
             geographical_location="",
             description=Description(plain="test"),
-            os="",
+            os=ssh_data["hostnamectl_info"]["os"],
             owner="",
             pricing_schema="",
             underlying_orchestrating_technology="",
-            kernel="",
+            kernel=ssh_data["hostnamectl_info"]["kernel"],
             cpu=cpu_properties,
             memory=memory_properties,
             accelerator=[],
@@ -146,6 +146,7 @@ class HPCPlugin(BasePlugin):
         # ----- RETRIEVE DATA -----
         
         cpu_props = None
+        other_data = None
         # ...
         
         try:
@@ -157,13 +158,15 @@ class HPCPlugin(BasePlugin):
             )
             self.logger.info(f"SSH connected to {login_node}.")
 
-            # 1. Get the data
-            # cpu data:
+            # 1) cpu data:
             _, stdout, stderr   = ssh_client.exec_command("lscpu")
             lscpu_output        = stdout.read().decode("utf-8", errors="replace")
-
-            # 2. Parse the data
             cpu_props = self._parse_ssh_cpu_properties(lscpu_output)
+
+            # 2) OS / kernel data
+            _, stdout, stderr = ssh_client.exec_command("hostnamectl")
+            hostnamectl_output = stdout.read().decode("utf-8", errors="replace")
+            hostnamectl_props = self._parse_hostnamectl_properties(hostnamectl_output)
 
         except Exception as e:
             self.logger.error(f"SSH connection failed: {e}")
@@ -173,6 +176,7 @@ class HPCPlugin(BasePlugin):
         # We can maybe extend it in the future
         return {
             "cpu_info": cpu_props,
+            "hostnamectl_info": hostnamectl_props,
         }
 
     def _parse_ssh_cpu_properties(self, lscpu_output: str) -> dict:
@@ -216,4 +220,31 @@ class HPCPlugin(BasePlugin):
             # "cache_L1_I"  : cache_l1i if cache_l1i else None,
             # "cache_L2"    : cache_l2 if cache_l2 else None,
             # "cache_L3"    : cache_l3 if cache_l3 else None
+        }
+    
+    def _parse_hostnamectl_properties(self, hostnamectl_output: str) -> dict:
+        """
+        Helper to parse the 'hostnamectl' output lines.
+        Example line in hostnamectl output:
+            Operating System: Red Hat Enterprise Linux 9.2 (Plow)
+            Kernel: Linux 5.14.0-284.30.1.el9_2.x86_64
+        This function returns the parsed data in a dictionary.
+        """
+        data_map = {}
+        for line in hostnamectl_output.splitlines():
+            line_stripped = line.strip()
+            if ":" in line_stripped:
+                key, val = line_stripped.split(":", 1)
+                key = key.strip()
+                val = val.strip()
+                data_map[key] = val
+
+        return {
+            "os": data_map.get("Operating System"),
+            "kernel": data_map.get("Kernel"),
+            # we can also easily get these:
+            # "architecture": data_map.get("Architecture"),
+            # "hardware_vendor": data_map.get("Hardware Vendor"),
+            # "hardware_model": data_map.get("Hardware Model"),
+            # ...
         }
