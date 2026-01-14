@@ -17,3 +17,6 @@ class APIRequestError(Exception):
 
 class PluginLoadError(Exception):
     """Exception raised when a plugin configuration is invalid."""
+    
+class ConnectionConfigurationError(Exception):
+    """Exception raised when a connection configuration is invalid."""

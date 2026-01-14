@@ -8,6 +8,7 @@ AllowedOrchestratorTypes:
   - kubernetes
   - openstack
   - slurm
+  - hpc
 
 # Plugins directory (optional)
 # PluginsDirectory: "pp"

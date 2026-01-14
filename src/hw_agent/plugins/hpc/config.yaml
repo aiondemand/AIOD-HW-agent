@@ -1,0 +1,33 @@
+name: HPC Plugin
+module: hpc_plugin
+orchestrator_type: hpc
+documentation:
+  description: Provides hardware information from HPC clusters
+  author: BSC
+  version: 0.0.1
+dependencies:
+  - paramiko
+# TODO: New section for metadata?
+connection_schema:
+  type: "object"
+  description: "Credentials for HPC access"
+  required:
+    - ssh_credentials
+  properties:
+    ssh_credentials:
+      type: "object"
+      description: "SSH credentials object"
+      required:
+        - login_node
+        - user
+        - private_key
+      properties:
+        login_node:
+          type: "string"
+          description: "Cluster login node"
+        user:
+          type: "string"
+          description: "Username"
+        private_key:
+          type: "string"
+          description: "Base64 encoded string with the private key content"

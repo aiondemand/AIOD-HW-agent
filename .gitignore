@@ -4,6 +4,7 @@
 src/.env
 .venv
 env/
+*.env
 venv/
 venv
 venv.bak/
@@ -62,3 +63,4 @@ MANIFEST
 
 # Configuration persistent data
 data/
+.qodo

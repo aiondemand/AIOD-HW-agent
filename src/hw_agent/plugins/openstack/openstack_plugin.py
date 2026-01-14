@@ -18,7 +18,6 @@ class OpenStackPlugin(BasePlugin):
 
     def fetch_computational_data(self, plugin_context: PluginContext) -> Dict[str, Any]:
 
-        # TODO: Build a model for this as a responsability of the plugin
         # Retrieve connection details from the context
         auth_url = plugin_context.get_connection_info('auth_url')
         username = plugin_context.get_connection_info('username')

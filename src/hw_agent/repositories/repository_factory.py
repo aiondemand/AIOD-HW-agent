@@ -15,5 +15,5 @@ class RepositoryFactory:
     def create_repository(cls, repository_type) -> BaseRepository:
         repository_cls = cls._registry.get(repository_type)
         if repository_cls is None:
-            raise ValueError(f"Unsupported repository type: {repository_type}")
+            raise ValueError(f"Unsupported repository type: {repository_type}. Please, check the environment variable REPOSITORY_TYPE")
         return repository_cls()

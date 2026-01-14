@@ -11,6 +11,7 @@ class ConnectionConfigMetadata(BaseModel):
     name: str
     description: str
     contact: str
+    location: Optional[str] = None
 
 class ConnectionConfigCreate(BaseModel):
     metadata: ConnectionConfigMetadata
