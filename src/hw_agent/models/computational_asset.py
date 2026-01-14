@@ -59,33 +59,33 @@ class CPUProperties(BaseModel):
 
 
 class AcceleratorProperties(BaseModel):
-    cores: int
-    architecture: str
-    vendor: str
-    acc_model_name: str
-    type: str  # This could be GPU, TPU, FPGA, etc.
+    cores: Optional[int] = None
+    architecture: Optional[str] = None
+    vendor: Optional[str] = None
+    acc_model_name: Optional[str] = None
+    type: Optional[str] = None  # This could be GPU, TPU, FPGA, etc.
     # computation_framework_supported: List[str]  # E.g., CUDA, OpenCL
-    memory: int  # Memory size in gigabytes
+    memory: Optional[int]  # Memory size in gigabytes
 
 class NetworkProperties(BaseModel):
-    latency: float  # Latency in milliseconds
-    bandwith_Mbps: float  # Bandwidth in Megabits per second
-    topology: str
+    latency: Optional[float] = None # Latency in milliseconds
+    bandwith_Mbps: Optional[float] = None  # Bandwidth in Megabits per second
+    topology: Optional[str] = None
 
 class MemoryProperties(BaseModel):
     type: Optional[str] = None  # Type of memory, e.g., DDR4, GDDR6, HBM
-    amount_gb: int  # Size of memory in gigabytes
+    amount_gb: Optional[int] = None # Size of memory in gigabytes
     read_bandwidth: Optional[float] = None  # Memory bandwidth in gigabytes per second
     write_bandwidth: Optional[float] = None  # Memory bandwidth in gigabytes per second
     rdma: Optional[bool] = None  # Indicates if RDMA is supported
 
 class StorageProperties(BaseModel):
-    model: str
-    vendor: str
-    amount: int  # Capacity of storage in gigabytes
-    type: str  # Type of storage, e.g., SSD, HDD, NVMe
-    read_bandwidth: int  # Read bandwidth in Megabytes per second
-    write_bandwidth: int  # Write bandwidth in Megabytes per second
+    model: Optional[str] = None
+    vendor: Optional[str] = None
+    amount: Optional[int] = None # Capacity of storage in gigabytes
+    type: Optional[str] = None  # Type of storage, e.g., SSD, HDD, NVMe
+    read_bandwidth: Optional[int] = None # Read bandwidth in Megabytes per second
+    write_bandwidth: Optional[int] = None # Write bandwidth in Megabytes per second
     # data_transfer_mechanisms: List[str]  # List of supported data transfer mechanisms, e.g., SATA, SAS, PCIe
 
 class AddressProperties(BaseModel):
@@ -99,7 +99,7 @@ class AddressProperties(BaseModel):
 class GeoProperties(BaseModel):
     latitude: float = 0  # Latitude in degrees
     longitude: float = 0  # Longitude in degrees
-    elevation_millimeters: int = 0  # Elevation in millimeters
+    elevation_millimeters: Optional[int] = 0  # Elevation in millimeters
 
 class LocationProperties(BaseModel):
     address: Optional[AddressProperties] = None
