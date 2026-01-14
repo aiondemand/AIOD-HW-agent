@@ -1,0 +1,18 @@
+clusters:
+  - name: GPP
+    node_count: 6192
+    cores_per_node: 112
+    memory_per_node: 256
+  - name: GPP-HighMem
+    node_count: 216
+    cores_per_node: 112
+    memory_per_node: 1024
+  - name: GPP-Data
+    node_count: 10
+    cores_per_node: 112
+    memory_per_node: 2048
+  - name: GPP-HBM
+    node_count: 72
+    cores_per_node: 112
+    memory_per_node: 128
+# TODO: Add AMD, MN4, other clusters...
